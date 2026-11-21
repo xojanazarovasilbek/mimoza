@@ -1,0 +1,46 @@
+from django.urls import path
+
+from . import views
+
+urlpatterns = [
+    path('', views.home, name='home'),
+    path('catalog/', views.catalog, name='catalog'),
+    path('contact/', views.contact, name='contact'),
+    path('stories/<int:story_id>/', views.story_detail, name='story_detail'),
+    path('reels/', views.reels, name='reels'),
+    path('product/<slug:slug>/', views.product_detail, name='product_detail'),
+    path('product/<int:product_id>/like/', views.product_like_toggle, name='product_like_toggle'),
+    path('product/<int:product_id>/comments/', views.product_comment_create, name='product_comment_create'),
+    path('cart/', views.cart, name='cart'),
+    path('cart/add/<int:product_id>/', views.cart_add, name='cart_add'),
+    path('cart/update/<int:product_id>/', views.cart_update, name='cart_update'),
+    path('checkout/', views.checkout, name='checkout'),
+    path('account/', views.account, name='account'),
+    path('account/login/', views.account_login, name='account_login'),
+    path('account/register/', views.account_register, name='account_register'),
+    path('account/logout/', views.account_logout, name='account_logout'),
+    path('account/important-dates/create/', views.important_date_create, name='important_date_create'),
+    path(
+        'account/important-dates/<int:date_id>/update/',
+        views.important_date_update,
+        name='important_date_update',
+    ),
+    path(
+        'account/important-dates/<int:date_id>/delete/',
+        views.important_date_delete,
+        name='important_date_delete',
+    ),
+    path('push/subscribe/', views.push_subscription_create, name='push_subscription_create'),
+    path('push/unsubscribe/', views.push_subscription_delete, name='push_subscription_delete'),
+    path('service-worker.js', views.service_worker, name='service_worker'),
+    path('crm/', views.crm_dashboard, name='crm_dashboard'),
+    path('crm/orders/', views.crm_orders, name='crm_orders'),
+    path('crm/notifications/orders/', views.crm_order_notification_count, name='crm_order_notification_count'),
+    path('crm/orders/<int:order_id>/status/', views.crm_order_status, name='crm_order_status'),
+    path('crm/orders/<int:order_id>/assign/', views.crm_order_assignments, name='crm_order_assignments'),
+    path('crm/products/', views.crm_products, name='crm_products'),
+    path('crm/products/<int:product_id>/stock/', views.crm_product_stock, name='crm_product_stock'),
+    path('crm/analytics/', views.crm_analytics, name='crm_analytics'),
+    path('crm/users/', views.crm_users, name='crm_users'),
+    path('crm/users/<int:user_id>/role/', views.crm_user_role, name='crm_user_role'),
+]

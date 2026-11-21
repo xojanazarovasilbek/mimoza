@@ -1,0 +1,45 @@
+{% extends 'mimoza/base.html' %}
+{% block title %}Aloqa — Mimoza Floral{% endblock %}
+{% block content %}
+<section class="section contact-page">
+    <div class="section-heading">
+        <p class="eyebrow">MIMOZA FLORAL</p>
+        <h1>Biz bilan bog‘laning</h1>
+        <p>Buyurtma va gullar bo‘yicha savollaringiz bo‘lsa, bizga yozing yoki qo‘ng‘iroq qiling.</p>
+    </div>
+    <div class="contact-grid">
+        <article class="contact-card">
+            <span class="contact-label">TELEFON</span>
+            <h2>Qo‘ng‘iroq qiling</h2>
+            <a href="{{ contact_phone_link }}">{{ contact_phone }}</a>
+        </article>
+        <article class="contact-card">
+            <span class="contact-label">INSTAGRAM</span>
+            <h2>Bizni kuzating</h2>
+            <a href="{{ instagram_contact_url }}" target="_blank" rel="noopener">@{{ instagram_contact_username }}</a>
+        </article>
+        <article class="contact-card">
+            <span class="contact-label">TELEGRAM</span>
+            <h2>Telegram’da yozing</h2>
+            <a href="{{ telegram_contact_url }}" target="_blank" rel="noopener">@{{ telegram_contact_username }}</a>
+        </article>
+    </div>
+    <article class="contact-location">
+        <div class="contact-location-heading">
+            <div>
+                <span class="contact-label">MANZIL</span>
+                <h2>Bizning joylashuvimiz</h2>
+                <p>Toshkent. Xaritada manzilni ochib, yo‘nalishni ko‘ring.</p>
+            </div>
+            <a class="button" href="{{ shop_location_url }}" target="_blank" rel="noopener">Google Maps’da ochish</a>
+        </div>
+        <iframe
+            src="{{ shop_location_embed_url }}"
+            title="Mimoza Floral do‘koni joylashuvi"
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"
+            allowfullscreen>
+        </iframe>
+    </article>
+</section>
+{% endblock %}

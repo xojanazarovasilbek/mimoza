@@ -1,0 +1,10 @@
+[Unit]
+Description=Daily Mimoza important-date reminders
+
+[Timer]
+OnCalendar=*-*-* 04:00:00 UTC
+Persistent=true
+Unit=mimoza-reminders.service
+
+[Install]
+WantedBy=timers.target

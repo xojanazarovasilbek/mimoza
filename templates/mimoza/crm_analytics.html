@@ -1,0 +1,37 @@
+{% extends 'mimoza/crm_base.html' %}
+{% block title %}Analitika — Mimoza CRM{% endblock %}
+{% block crm_content %}
+<header class="crm-page-heading">
+    <div><p class="crm-kicker">SAVDO HISOBOTI</p><h1>Analitika</h1></div>
+</header>
+<nav class="period-tabs">
+    <a class="{% if days == 7 %}active{% endif %}" href="?days=7">7 kun</a>
+    <a class="{% if days == 30 %}active{% endif %}" href="?days=30">30 kun</a>
+    <a class="{% if days == 90 %}active{% endif %}" href="?days=90">90 kun</a>
+</nav>
+<div class="metric-grid">
+    <article class="metric-card"><span>Jami tushum</span><strong>{{ sales_total }} <small>UZS</small></strong></article>
+    <article class="metric-card"><span>Buyurtmalar</span><strong>{{ orders_count }}</strong></article>
+    <article class="metric-card"><span>O‘rtacha chek</span><strong>{{ average_order }} <small>UZS</small></strong></article>
+    <article class="metric-card"><span>Bekor qilingan</span><strong>{{ cancelled_count }}</strong></article>
+</div>
+<div class="crm-columns analytics-columns">
+    <section class="crm-panel">
+        <div class="panel-heading"><h2>Kunlik tushum</h2></div>
+        {% if daily_sales %}
+        <div class="sales-list">
+            {% for day in daily_sales %}
+            <div class="sales-row"><time>{{ day.created_at__date|date:"d.m" }}</time><div class="sales-track"><span style="width:{% widthratio day.revenue sales_total 100 %}%"></span></div><strong>{{ day.revenue }} UZS</strong></div>
+            {% endfor %}
+        </div>
+        {% else %}<p class="empty">Tanlangan davrda savdo ma’lumoti yo‘q.</p>{% endif %}
+    </section>
+    <section class="crm-panel">
+        <div class="panel-heading"><h2>Ko‘p sotilgan mahsulotlar</h2></div>
+        <ul class="low-stock-list">
+            {% for item in top_products %}<li><span>{{ item.product__name }}<small>{{ item.revenue }} UZS tushum</small></span><strong>{{ item.quantity }} ta</strong></li>
+            {% empty %}<li class="empty">Sotuv ma’lumoti yo‘q.</li>{% endfor %}
+        </ul>
+    </section>
+</div>
+{% endblock %}

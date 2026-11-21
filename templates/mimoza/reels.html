@@ -1,0 +1,53 @@
+{% extends 'mimoza/base.html' %}
+{% block title %}Reels — Mimoza Floral{% endblock %}
+{% block content %}
+<section class="reels-page">
+    <header class="reels-page-heading">
+        <a href="{% url 'home' %}">← Bosh sahifa</a>
+        <div><p class="eyebrow">MIMOZA FLORAL</p><h1>Reels</h1></div>
+        <span></span>
+    </header>
+    {% for product in video_products %}
+    <article class="reel-card">
+        {% if product.video %}
+        <video class="reel-media" controls playsinline preload="metadata">
+            {% if product.hls_playlist %}<source src="{{ product.hls_playlist.url }}" type="application/vnd.apple.mpegurl">{% endif %}
+            <source src="{{ product.video.url }}" type="video/mp4">
+        </video>
+        {% else %}
+        <iframe class="reel-media" src="{{ product.video_url }}" title="{{ product.name }}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        {% endif %}
+        <div class="reel-actions">
+            {% if request.user.is_authenticated %}
+            <form method="post" action="{% url 'product_like_toggle' product.id %}">
+                {% csrf_token %}
+                <button type="submit">{% if product.id in liked_product_ids %}♥{% else %}♡{% endif %}<span>{{ product.likes_count }}</span></button>
+            </form>
+            {% else %}
+            <a href="{% url 'account_login' %}?next={{ request.path|urlencode }}">♡<span>{{ product.likes_count }}</span></a>
+            {% endif %}
+            <a href="{% url 'product_detail' product.slug %}#product-comments">◉<span>Izoh</span></a>
+        </div>
+        <div class="reel-product">
+            <p>{{ product.category.name }}</p>
+            <h2>{{ product.name }}</h2>
+            <strong>{{ product.price }} UZS</strong>
+            {% if request.user.is_authenticated %}
+            <form method="post" action="{% url 'cart_add' product.id %}">
+                {% csrf_token %}
+                <button class="button" type="submit">Savatga qo‘shish</button>
+            </form>
+            {% else %}
+            <a class="button" href="{% url 'account_register' %}?next={% url 'product_detail' product.slug %}">Buyurtma berish</a>
+            {% endif %}
+        </div>
+    </article>
+    {% empty %}
+    <div class="reels-empty">
+        <h2>Hozircha Reels videolari yo‘q</h2>
+        <p>Admin panelda mahsulotga video yuklang — u shu yerda ko‘rinadi.</p>
+        <a class="button" href="{% url 'catalog' %}">Katalogni ko‘rish</a>
+    </div>
+    {% endfor %}
+</section>
+{% endblock %}

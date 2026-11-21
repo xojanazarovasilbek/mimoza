@@ -1,0 +1,102 @@
+{% extends 'mimoza/base.html' %}
+{% load static %}
+{% block title %}Mening hisobim — Mimoza Floral{% endblock %}
+{% block content %}
+<section class="account-page section">
+    <div class="account-heading">
+        <div><p class="eyebrow">MIJOZ KABINETI</p><h1>Assalomu alaykum, {{ request.user.first_name|default:request.user.username }}</h1></div>
+        <form method="post" action="{% url 'account_logout' %}">{% csrf_token %}<button class="account-logout" type="submit">Hisobdan chiqish</button></form>
+    </div>
+    {% if messages %}
+    <div class="account-feedback" role="status">
+        {% for message in messages %}<p class="account-feedback-{{ message.tags }}">{{ message }}</p>{% endfor %}
+    </div>
+    {% endif %}
+    <div class="account-cards">
+        <article class="account-card"><span>Telefon raqam</span><strong>{{ customer.phone|default:"Kiritilmagan" }}</strong></article>
+        <article class="account-card"><span>Bonus balans</span><strong>{{ customer.cashback|default:0 }} UZS</strong></article>
+        <article class="account-card"><span>Buyurtmalar</span><strong>{{ orders|length }}</strong></article>
+    </div>
+    <section
+        id="push-notification-panel"
+        class="push-notification-panel"
+        data-vapid-public-key="{{ web_push_public_key }}"
+        data-worker-url="{% url 'service_worker' %}"
+        data-subscribe-url="{% url 'push_subscription_create' %}"
+        data-unsubscribe-url="{% url 'push_subscription_delete' %}">
+        <div>
+            <p class="eyebrow">BILDIRISHNOMALAR</p>
+            <h2>Push eslatmalar</h2>
+            <p>Muhim sanalar haqida brauzer bildirishnomalarini oling.</p>
+        </div>
+        <form>
+            {% csrf_token %}
+            {% if web_push_configured %}
+            <button class="button" type="button" data-push-enable>Bildirishnomalarni yoqish</button>
+            <button class="account-logout" type="button" data-push-disable hidden>Bildirishnomalarni o‘chirish</button>
+            {% endif %}
+            <span data-push-status role="status">{% if not web_push_configured %}Push kalitlari serverda sozlanmagan.{% endif %}</span>
+        </form>
+    </section>
+    <section class="account-important-dates">
+        <div>
+            <p class="eyebrow">ESLATMALAR</p>
+            <h2>Muhim sanalar</h2>
+            <p>Har yili sana kelishidan ikki kun oldin eslatma oling.</p>
+        </div>
+        {% if customer %}
+        <form method="post" action="{% url 'important_date_create' %}">
+            {% csrf_token %}
+            {{ important_date_form.as_p }}
+            <button class="button" type="submit">Sanani saqlash</button>
+        </form>
+        {% else %}
+        <p>Muhim sanalarni saqlash uchun mijoz profili kerak.</p>
+        {% endif %}
+        <ul>
+            {% for important_date in important_dates %}
+            <li>
+                <form class="important-date-edit" method="post" action="{% url 'important_date_update' important_date.id %}">
+                    {% csrf_token %}
+                    <label>
+                        <span>Sana nomi</span>
+                        <input type="text" name="label" value="{{ important_date.label }}" maxlength="100" required>
+                    </label>
+                    <label>
+                        <span>Sana</span>
+                        <input type="date" name="date" value="{{ important_date.date|date:'Y-m-d' }}" required>
+                    </label>
+                    <label class="important-date-reminder">
+                        <input type="checkbox" name="reminder_enabled" {% if important_date.reminder_enabled %}checked{% endif %}>
+                        Push eslatma
+                    </label>
+                    <button class="account-logout" type="submit">Yangilash</button>
+                </form>
+                <form method="post" action="{% url 'important_date_delete' important_date.id %}">
+                    {% csrf_token %}
+                    <button class="account-logout" type="submit">O‘chirish</button>
+                </form>
+            </li>
+            {% empty %}
+            <li>Hozircha muhim sana qo‘shilmagan.</li>
+            {% endfor %}
+        </ul>
+    </section>
+    <div class="account-orders">
+        <h2>Buyurtmalarim</h2>
+        {% for order in orders %}
+        <article class="account-order">
+            <div class="order-summary">
+                <div><strong>Buyurtma #{{ order.id }}</strong><small>Buyurtma vaqti: <time datetime="{{ order.created_at|date:'c' }}">{{ order.created_at|date:"d.m.Y H:i" }}</time></small></div>
+                <span class="order-status">{{ order.get_status_display }}</span>
+                <strong>{{ order.total }} UZS</strong>
+            </div>
+            <ul>{% for item in order.items.all %}<li>{{ item.product.name }} × {{ item.quantity }}</li>{% endfor %}</ul>
+        </article>
+        {% empty %}
+        <div class="account-empty"><p>Sizda hozircha buyurtmalar yo‘q.</p><a class="button" href="{% url 'catalog' %}">Gullarni ko‘rish</a></div>
+        {% endfor %}
+    </div>
+</section>
+{% if web_push_configured %}<script src="{% static 'js/push-notifications.js' %}" defer></script>{% endif %}
+{% endblock %}

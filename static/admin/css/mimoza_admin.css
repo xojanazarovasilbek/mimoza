@@ -1,0 +1,73 @@
+:root {
+    --primary: #3D0C11;
+    --secondary: #3D0C11;
+    --accent: #D4AF37;
+    --header-bg: #3D0C11;
+    --header-color: #D4AF37;
+    --breadcrumbs-bg: #4e1318;
+    --body-fg: #241416;
+    --body-bg: #FAF7F2;
+    --darkened-bg: #f4ecdf;
+    --selected-bg: #eadfcf;
+}
+
+body {
+    background: #FAF7F2;
+}
+
+#header {
+    background: #3D0C11;
+    color: #D4AF37;
+    border-bottom: 3px solid #D4AF37;
+}
+
+#header a:link,
+#header a:visited,
+#header a:hover {
+    color: #D4AF37;
+}
+
+#branding h1 {
+    font-family: Georgia, serif;
+    letter-spacing: 2px;
+}
+
+#branding h1 span {
+    color: #D4AF37;
+}
+
+div.breadcrumbs {
+    background: #4e1318;
+    color: #f9edba;
+}
+
+div.breadcrumbs a {
+    color: #D4AF37;
+}
+
+.module h2,
+.module caption,
+.inline-group h2 {
+    background: #3D0C11;
+}
+
+.button,
+input[type="submit"],
+input[type="button"],
+.submit-row input,
+a.button {
+    background: #3D0C11;
+    color: #fff;
+}
+
+.button.default,
+input[type="submit"].default,
+.submit-row input.default {
+    background: #D4AF37;
+    color: #3D0C11;
+}
+
+.object-tools a {
+    background: #D4AF37;
+    color: #3D0C11;
+}

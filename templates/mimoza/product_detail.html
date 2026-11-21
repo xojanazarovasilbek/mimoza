@@ -1,0 +1,83 @@
+{% extends 'mimoza/base.html' %}
+{% block title %}{{ product.name }} — Mimoza Floral{% endblock %}
+{% block content %}
+<section class="detail section">
+    <div class="detail-image">
+        {% if product.video %}
+        <video controls preload="metadata" style="width:100%;height:100%;object-fit:cover">
+            {% if product.hls_playlist %}<source src="{{ product.hls_playlist.url }}" type="application/vnd.apple.mpegurl">{% endif %}
+            <source src="{{ product.video.url }}" type="video/mp4">
+        </video>
+        {% elif product.video_url %}
+        <iframe src="{{ product.video_url }}" title="{{ product.name }}" allowfullscreen style="width:100%;height:100%;border:0"></iframe>
+        {% elif product.image %}
+        <img src="{{ product.image.url }}" alt="{{ product.name }}">
+        {% elif product.image_url %}
+        <img src="{{ product.image_url }}" alt="{{ product.name }}">
+        {% else %}
+        <div class="image-placeholder">MIMOZA</div>
+        {% endif %}
+    </div>
+    <div class="detail-info">
+        <p class="eyebrow">{{ product.category.name }}</p>
+        <h1>{{ product.name }}</h1>
+        <strong class="detail-price">{{ product.price }} UZS</strong>
+        <p>{{ product.description }}</p>
+        <div class="product-like-area">
+            {% if request.user.is_authenticated %}
+            <form method="post" action="{% url 'product_like_toggle' product.id %}">
+                {% csrf_token %}
+                <button class="product-like-button {% if is_liked %}is-liked{% endif %}" type="submit" aria-pressed="{{ is_liked|yesno:'true,false' }}">
+                    {% if is_liked %}♥ Yoqtirildi{% else %}♡ Yoqdi{% endif %}
+                </button>
+            </form>
+            {% else %}
+            <a class="product-like-button" href="{% url 'account_login' %}?next={{ request.path|urlencode }}">♡ Yoqtirish uchun kiring</a>
+            {% endif %}
+            <span>{{ product.likes_count }} ta yoqtirish</span>
+        </div>
+        {% if request.user.is_authenticated %}
+        <form method="post" action="{% url 'cart_add' product.id %}">
+            {% csrf_token %}
+            <button class="button" type="submit">Savatga qo'shish</button>
+        </form>
+        {% else %}
+        <a class="button" href="{% url 'account_register' %}">Buyurtma berish uchun ro‘yxatdan o‘ting</a>
+        {% endif %}
+    </div>
+</section>
+<section class="section product-comments" id="product-comments">
+    <div class="section-heading">
+        <p class="eyebrow">Mijozlar fikri</p>
+        <h2>Izohlar ({{ product.comments.count }})</h2>
+    </div>
+    {% if messages %}
+    <div class="product-feedback">
+        {% for message in messages %}<p class="product-feedback-{{ message.tags }}">{{ message }}</p>{% endfor %}
+    </div>
+    {% endif %}
+    {% if request.user.is_authenticated %}
+    <form class="product-comment-form" method="post" action="{% url 'product_comment_create' product.id %}">
+        {% csrf_token %}
+        <label for="product-comment-text">Izohingiz</label>
+        <textarea id="product-comment-text" name="text" rows="4" maxlength="1000" required placeholder="Mahsulot haqida fikringizni yozing"></textarea>
+        <button class="button" type="submit">Izoh qoldirish</button>
+    </form>
+    {% else %}
+    <p class="product-comments-login">
+        Izoh qoldirish uchun <a href="{% url 'account_login' %}?next={{ request.path|urlencode }}">hisobingizga kiring</a>
+        yoki <a href="{% url 'account_register' %}?next={{ request.path|urlencode }}">ro‘yxatdan o‘ting</a>.
+    </p>
+    {% endif %}
+    <div class="product-comment-list">
+        {% for comment in comments %}
+        <article class="product-comment">
+            <div><strong>{{ comment.user.get_full_name|default:comment.user.username }}</strong><time datetime="{{ comment.created_at|date:'c' }}">{{ comment.created_at|date:"d.m.Y H:i" }}</time></div>
+            <p>{{ comment.text|linebreaksbr }}</p>
+        </article>
+        {% empty %}
+        <p class="product-comments-empty">Bu mahsulotga hali izoh qoldirilmagan.</p>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

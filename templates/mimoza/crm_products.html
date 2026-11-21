@@ -1,0 +1,24 @@
+{% extends 'mimoza/crm_base.html' %}
+{% block title %}Mahsulotlar va ombor — Mimoza CRM{% endblock %}
+{% block crm_content %}
+<header class="crm-page-heading"><div><p class="crm-kicker">KATALOG VA QOLDIQ</p><h1>Mahsulotlar va ombor</h1></div>{% if can_manage_catalog %}<a class="crm-button" href="{% url 'admin:mimoza_product_add' %}">+ Mahsulot qo‘shish</a>{% endif %}</header>
+<div class="metric-grid compact">
+    <article class="metric-card"><span>Kam qolgan (5 ta yoki kam)</span><strong>{{ low_stock_count }}</strong></article>
+</div>
+<form class="crm-filters" method="get"><input name="q" value="{{ query }}" placeholder="Mahsulot yoki kategoriya"><button class="crm-button" type="submit">Qidirish</button></form>
+<section class="crm-panel table-scroll">
+    <table>
+        <thead><tr><th>Mahsulot</th><th>Kategoriya</th><th>Narxi</th><th>Ombor miqdori</th><th>Sotuv holati</th><th></th></tr></thead>
+        <tbody>
+        {% for product in products %}
+        <tr>
+            <td>{% if can_manage_catalog %}<a class="table-link" href="{% url 'admin:mimoza_product_change' product.id %}">{{ product.name }}</a>{% else %}{{ product.name }}{% endif %}</td><td>{{ product.category.name }}</td><td>{{ product.price }} UZS</td>
+            <td>{% if product.stock_quantity <= 5 %}<span class="stock-low">{{ product.stock_quantity }} ta</span>{% else %}{{ product.stock_quantity }} ta{% endif %}</td>
+            <td>{% if product.in_stock %}Sotuvda{% else %}Tugagan{% endif %}</td>
+            <td><form class="inline-form" method="post" action="{% url 'crm_product_stock' product.id %}">{% csrf_token %}<input class="quantity-input" type="number" name="stock_quantity" min="0" value="{{ product.stock_quantity }}" aria-label="{{ product.name }} ombor miqdori"><button class="small-button" type="submit">Qoldiqni saqlash</button></form></td>
+        </tr>
+        {% empty %}<tr><td colspan="6" class="empty">Mahsulot topilmadi.</td></tr>{% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endblock %}

@@ -1,0 +1,61 @@
+{% extends 'mimoza/base.html' %}
+{% block content %}
+<section class="hero">
+    <div>
+        <p class="eyebrow">Premium gul do'koni</p>
+        <h1>Har bir lahza uchun <em>hashamat</em></h1>
+        <p>O'zbekiston bo'ylab tezkor yetkazib berish bilan nafis buketlar.</p>
+        <a class="button" href="{% url 'catalog' %}">Katalogni ko'rish</a>
+    </div>
+</section>
+{% if stories %}
+<section class="section stories-section">
+    <div class="section-heading stories-heading">
+        <div><p class="eyebrow">MIMOZA FLORAL</p><h2>Stories</h2></div>
+        <span>Yangi gullar va yangiliklar</span>
+    </div>
+    <div class="story-strip">
+        {% for story in stories %}
+        <a class="story-teaser" href="{% url 'story_detail' story.id %}">
+            <span class="story-ring">
+                {% if story.image %}<img src="{{ story.image.url }}" alt="">
+                {% elif story.video %}<span class="story-video-icon">▶</span>{% endif %}
+            </span>
+            <span>{{ story.title }}</span>
+        </a>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+<section class="section">
+    <div class="section-heading"><p class="eyebrow">Tanlov</p><h2>Kategoriyalar</h2></div>
+    <div class="category-grid">
+        {% for category in categories %}
+        <a class="category-card" href="{% url 'catalog' %}?category={{ category.slug }}">
+            <span>{{ category.name }}</span>
+        </a>
+        {% empty %}
+        <p>Kategoriyalar tez orada qo'shiladi.</p>
+        {% endfor %}
+    </div>
+</section>
+<section class="section">
+    <div class="section-heading reels-heading">
+        <div><p class="eyebrow">Jonli ko‘rinish</p><h2>Tavsiya etiladi</h2></div>
+        <a class="text-link" href="{% url 'reels' %}">Reels videolarini ko‘rish →</a>
+    </div>
+    <div class="product-grid">
+        {% for product in featured|default:products %}
+        {% include 'mimoza/_product_card.html' %}
+        {% endfor %}
+    </div>
+</section>
+<section class="section home-contact">
+    <div>
+        <p class="eyebrow">Bog‘lanish</p>
+        <h2>Savollaringiz bormi?</h2>
+        <p>Telefon, ijtimoiy tarmoqlar va do‘kon manzilini aloqa sahifasidan ko‘ring.</p>
+    </div>
+    <a class="button" href="{% url 'contact' %}">Aloqa ma’lumotlari</a>
+</section>
+{% endblock %}

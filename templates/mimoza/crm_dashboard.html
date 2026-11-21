@@ -1,0 +1,37 @@
+{% extends 'mimoza/crm_base.html' %}
+{% block title %}CRM Dashboard — Mimoza Floral{% endblock %}
+{% block crm_content %}
+<header class="crm-page-heading">
+    <div><p class="crm-kicker">UMUMIY KO‘RSATKICHLAR</p><h1>Dashboard</h1></div>
+    <span class="crm-date">{% now "j F Y" %}</span>
+</header>
+<div class="metric-grid">
+    <article class="metric-card"><span>Bugungi buyurtmalar</span><strong>{{ orders_today }}</strong></article>
+    <article class="metric-card"><span>Kutilayotgan buyurtmalar</span><strong>{{ pending_orders }}</strong></article>
+    {% if can_view_finance %}<article class="metric-card"><span>Bugungi tushum</span><strong>{{ today_revenue }} <small>UZS</small></strong></article>{% endif %}
+    {% if can_view_inventory %}<article class="metric-card"><span>Mahsulotlar</span><strong>{{ products_count }}</strong></article>{% endif %}
+</div>
+<div class="crm-columns">
+    <section class="crm-panel">
+        <div class="panel-heading"><h2>So‘nggi buyurtmalar</h2><a href="{% url 'crm_orders' %}">Barchasi →</a></div>
+        <div class="table-scroll">
+            <table>
+                <thead><tr><th>Buyurtma</th><th>Buyurtma vaqti</th><th>Mijoz</th><th>Holati</th>{% if can_view_finance %}<th>Jami</th>{% endif %}</tr></thead>
+                <tbody>
+                    {% for order in recent_orders %}
+                    <tr><td>#{{ order.id }}</td><td><time datetime="{{ order.created_at|date:'c' }}">{{ order.created_at|date:"d.m.Y H:i" }}</time></td><td>{{ order.customer_name }}</td><td><span class="status status-{{ order.status }}">{{ order.get_status_display }}</span></td>{% if can_view_finance %}<td>{{ order.total }} UZS</td>{% endif %}</tr>
+                    {% empty %}<tr><td colspan="{% if can_view_finance %}5{% else %}4{% endif %}" class="empty">Buyurtmalar hali yo‘q.</td></tr>{% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+    {% if can_view_inventory %}<section class="crm-panel">
+        <div class="panel-heading"><h2>Kam qolgan mahsulotlar</h2><a href="{% url 'crm_products' %}">Ombor →</a></div>
+        <ul class="low-stock-list">
+            {% for product in low_stock %}
+            <li><span>{{ product.name }}<small>{{ product.category.name }}</small></span><strong>{{ product.stock_quantity }} ta</strong></li>
+            {% empty %}<li class="empty">Ombor qoldig‘i yaxshi.</li>{% endfor %}
+        </ul>
+    </section>{% endif %}
+</div>
+{% endblock %}

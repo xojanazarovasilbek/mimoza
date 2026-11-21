@@ -1,0 +1,19 @@
+{% extends 'mimoza/base.html' %}
+{% block title %}Hisobga kirish — Mimoza Floral{% endblock %}
+{% block content %}
+<section class="account-auth section">
+    <p class="eyebrow">MIMOZA FLORAL</p>
+    <h1>Hisobingizga kiring</h1>
+    <p>Buyurtmalaringiz va bonuslaringizni bir joydan kuzating.</p>
+    <form method="post" class="checkout-form">
+        {% csrf_token %}
+        {% if form.non_field_errors %}<div class="form-errors">{{ form.non_field_errors }}</div>{% endif %}
+        <label>Foydalanuvchi nomi{{ form.username }}</label>
+        {% if form.username.errors %}<div class="form-errors">{{ form.username.errors }}</div>{% endif %}
+        <label>Parol{{ form.password }}</label>
+        {% if form.password.errors %}<div class="form-errors">{{ form.password.errors }}</div>{% endif %}
+        <button class="button" type="submit">Kirish</button>
+    </form>
+    <p>Hisobingiz yo‘qmi? <a class="account-action-link" href="{% url 'account_register' %}">Ro‘yxatdan o‘ting</a></p>
+</section>
+{% endblock %}

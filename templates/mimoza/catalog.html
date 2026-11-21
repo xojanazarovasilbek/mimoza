@@ -1,0 +1,48 @@
+{% extends 'mimoza/base.html' %}
+{% block title %}Katalog — Mimoza Floral{% endblock %}
+{% block content %}
+<section class="catalog-page">
+    <div class="catalog-shell">
+        <header class="catalog-intro">
+            <div class="catalog-copy">
+                <p class="catalog-eyebrow"><span></span> MIMOZA FLORAL · YANGI KOLLEKSIYA</p>
+                <h1>Gullar bilan <em>aytilmagan</em><br>so‘zlarni ayting.</h1>
+                <p class="catalog-description">Har bir buket — o‘ziga xos bir hikoya. Sizga mos tuyg‘uni tanlang.</p>
+            </div>
+            <div class="catalog-seal" aria-hidden="true">
+                <span>GUL · MEHR · GO‘ZALLIK</span>
+                <strong>M</strong>
+                <small>EST. WITH LOVE</small>
+            </div>
+        </header>
+        <div class="catalog-toolbar">
+            <div class="catalog-count"><span>KO‘RING, HIS QILING</span><strong>{{ products|length }} ta buket</strong></div>
+            <form class="filters" method="get">
+                <label class="catalog-search">
+                    <span aria-hidden="true">⌕</span>
+                    <input name="q" value="{{ query }}" placeholder="Buket nomini qidiring">
+                </label>
+                <select name="category" aria-label="Kategoriyani tanlang">
+                    <option value="">Barcha kategoriyalar</option>
+                    {% for category in categories %}
+                    <option value="{{ category.slug }}" {% if selected_category == category.slug %}selected{% endif %}>{{ category.name }}</option>
+                    {% endfor %}
+                </select>
+                <select name="sort" aria-label="Saralash">
+                    <option value="new" {% if selected_sort == 'new' %}selected{% endif %}>Yangi kelganlar</option>
+                    <option value="price_asc" {% if selected_sort == 'price_asc' %}selected{% endif %}>Arzondan qimmatga</option>
+                    <option value="price_desc" {% if selected_sort == 'price_desc' %}selected{% endif %}>Qimmatdan arzonga</option>
+                </select>
+                <button class="catalog-filter-button" type="submit">Saralash <span>↗</span></button>
+            </form>
+        </div>
+        <div class="product-grid catalog-products">
+            {% for product in products %}
+            {% include 'mimoza/_product_card.html' %}
+            {% empty %}
+            <div class="catalog-empty"><span>✳</span><h2>Bu yerda hali gul ochmadi</h2><p>Boshqa so‘z yoki kategoriyani qidirib ko‘ring.</p><a href="{% url 'catalog' %}">Barcha buketlar</a></div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

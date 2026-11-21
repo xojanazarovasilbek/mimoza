@@ -1,0 +1,19 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}Mimoza Floral — Boshqaruv{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'admin/css/mimoza_admin.css' %}">
+{% endblock %}
+
+{% block branding %}
+<h1 id="site-name">
+    <a href="{% url 'admin:index' %}">
+        <span>MIMOZA</span> FLORAL
+    </a>
+</h1>
+{% endblock %}
+
+{% block nav-global %}{% endblock %}

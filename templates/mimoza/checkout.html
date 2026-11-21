@@ -1,0 +1,47 @@
+{% extends 'mimoza/base.html' %}
+{% block title %}Buyurtma — Mimoza Floral{% endblock %}
+{% block content %}
+<section class="section checkout">
+    <div class="section-heading"><p class="eyebrow">Yetkazib berish</p><h1>Ma'lumotlarni kiriting</h1></div>
+    {% if items %}
+    <form method="post" class="checkout-form">
+        {% csrf_token %}
+        {% if payment_error %}<p class="checkout-warning">{{ payment_error }}</p>{% endif %}
+        {% if delivery_error %}<p class="checkout-warning">{{ delivery_error }}</p>{% endif %}
+        {% if stock_error %}<p class="checkout-warning" role="alert">{{ stock_error }}</p>{% endif %}
+        <label>Ismingiz<input name="customer_name" value="{{ form_data.customer_name }}" required></label>
+        <label>Telefon raqam<input name="phone" value="{{ form_data.phone }}" required placeholder="+998"></label>
+        <label>Yetkazib berish kerakmi?
+            <select id="delivery-required" name="delivery_required" required>
+                <option value="">Tanlang</option>
+                <option value="yes" {% if form_data.delivery_required == "yes" %}selected{% endif %}>Ha, yetkazib berilsin</option>
+                <option value="no" {% if form_data.delivery_required == "no" %}selected{% endif %}>Yo‘q, do‘kondan olib ketaman</option>
+            </select>
+        </label>
+        <div id="delivery-help" class="delivery-help" {% if form_data.delivery_required != "yes" %}hidden{% endif %}>
+            <p>Buyurtmani saytda tasdiqlagandan keyin Telegram orqali gul raqami va lokatsiyangizni yuboring:</p>
+            <ul>{% for item in items %}<li>Gul №{{ item.product.pk }} — {{ item.product.name }}</li>{% endfor %}</ul>
+            <a class="button" href="{{ telegram_contact_url }}" target="_blank" rel="noopener">Telegram: @{{ telegram_contact_username }}</a>
+        </div>
+        <label>Tabrik matni<textarea name="card_message"></textarea></label>
+        <label>Izoh<textarea name="delivery_note"></textarea></label>
+        <label><input type="checkbox" name="anonymous_delivery"> Anonim yetkazib berish</label>
+        <label>To'lov usuli
+            <select name="payment_method">
+                <option value="cash">Kuryerga naqd</option>
+                <option value="card" disabled>Visa / Mastercard — tez orada</option>
+                <option value="click" disabled>Click — merchant hisobi kerak</option>
+                <option value="payme" disabled>Payme — merchant hisobi kerak</option>
+                <option value="uzum" disabled>Uzum Bank — merchant hisobi kerak</option>
+            </select>
+        </label>
+        <div class="cart-total"><span>Jami</span><strong>{{ total }} UZS</strong></div>
+        <button class="button" type="submit">Buyurtmani tasdiqlash</button>
+    </form>
+    {% else %}
+    <p>Buyurtma uchun savat bo'sh.</p>
+    {% endif %}
+</section>
+{% load static %}
+<script src="{% static 'js/delivery-choice.js' %}" defer></script>
+{% endblock %}

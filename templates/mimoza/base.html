@@ -1,0 +1,34 @@
+{% load static %}
+<!doctype html>
+<html lang="uz">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Mimoza Floral{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/site.css' %}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <header class="header">
+        <a class="brand" href="{% url 'home' %}" aria-label="Mimoza Floral bosh sahifa">
+            <img class="brand-logo" src="{% static 'images/mimoza-logo-wide.png' %}" alt="Mimoza Floral">
+        </a>
+        <nav>
+            <a href="{% url 'catalog' %}">Katalog</a>
+            <a href="{% url 'cart' %}" class="cart-link">Savat</a>
+            <a class="account-link" href="{% if request.user.is_authenticated %}{% url 'account' %}{% else %}{% url 'account_login' %}{% endif %}" title="Mijoz hisobi">
+                Hisob
+            </a>
+            {% if request.user.is_staff %}<a href="{% url 'crm_dashboard' %}">CRM</a>{% endif %}
+        </nav>
+    </header>
+    <main>{% block content %}{% endblock %}</main>
+    <footer>
+        <p>MIMOZA FLORAL · TOSHKENT</p>
+        <a href="{% url 'contact' %}">Aloqa ma’lumotlari</a>
+    </footer>
+</body>
+</html>

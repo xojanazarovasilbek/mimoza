@@ -1,0 +1,13 @@
+[Unit]
+Description=Send Mimoza important-date reminders
+After=network.target
+
+[Service]
+Type=oneshot
+User=www-data
+Group=www-data
+WorkingDirectory=/opt/mimoza
+EnvironmentFile=/etc/mimoza/mimoza.env
+ExecStart=/opt/mimoza/.venv/bin/python manage.py send_important_date_reminders
+PrivateTmp=true
+NoNewPrivileges=true

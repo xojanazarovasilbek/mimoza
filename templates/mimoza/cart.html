@@ -1,0 +1,27 @@
+{% extends 'mimoza/base.html' %}
+{% block title %}Savat — Mimoza Floral{% endblock %}
+{% block content %}
+<section class="section cart-page">
+    <div class="section-heading"><p class="eyebrow">Buyurtma</p><h1>Saatingiz</h1></div>
+    {% if items %}
+    <div class="cart-list">
+        {% for item in items %}
+        <article class="cart-row">
+            <div><h3>{{ item.product.name }}</h3><p>{{ item.product.price }} UZS</p></div>
+            <form method="post" action="{% url 'cart_update' item.product.id %}">
+                {% csrf_token %}
+                <input type="number" name="quantity" value="{{ item.quantity }}" min="0">
+                <button type="submit">Yangilash</button>
+            </form>
+            <strong>{{ item.subtotal }} UZS</strong>
+        </article>
+        {% endfor %}
+    </div>
+    <div class="cart-total"><span>Jami</span><strong>{{ total }} UZS</strong></div>
+    <a class="button" href="{% url 'checkout' %}">Buyurtma berish</a>
+    {% else %}
+    <p>Saatingiz bo'sh.</p>
+    <a class="button" href="{% url 'catalog' %}">Xaridni boshlash</a>
+    {% endif %}
+</section>
+{% endblock %}

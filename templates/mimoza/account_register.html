@@ -1,0 +1,20 @@
+{% extends 'mimoza/base.html' %}
+{% block title %}Ro‘yxatdan o‘tish — Mimoza Floral{% endblock %}
+{% block content %}
+<section class="account-auth section">
+    <p class="eyebrow">MIMOZA FLORAL</p>
+    <h1>Hisob yarating</h1>
+    <p>Buyurtma tarixi va bonuslaringizni saqlab boring.</p>
+    <form method="post" class="checkout-form">
+        {% csrf_token %}
+        {% for field in form %}
+        <label>{{ field.label }}{{ field }}</label>
+        {% if field.help_text %}<small class="field-help">{{ field.help_text }}</small>{% endif %}
+        {% if field.errors %}<div class="form-errors">{{ field.errors }}</div>{% endif %}
+        {% endfor %}
+        {% if form.non_field_errors %}<div class="form-errors">{{ form.non_field_errors }}</div>{% endif %}
+        <button class="button" type="submit">Ro‘yxatdan o‘tish</button>
+    </form>
+    <p>Hisobingiz bormi? <a class="account-action-link" href="{% url 'account_login' %}">Kirish</a></p>
+</section>
+{% endblock %}

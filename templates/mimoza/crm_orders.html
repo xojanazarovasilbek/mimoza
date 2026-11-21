@@ -1,0 +1,43 @@
+{% extends 'mimoza/crm_base.html' %}
+{% block title %}Buyurtmalar — Mimoza CRM{% endblock %}
+{% block crm_content %}
+<header class="crm-page-heading"><div><p class="crm-kicker">SAVDO JARAYONI</p><h1>Buyurtmalar</h1></div></header>
+<form class="crm-filters" method="get">
+    <input name="q" value="{{ query }}" placeholder="Mijoz yoki telefon">
+    <select name="status"><option value="">Barcha holatlar</option>{% for value,label in statuses %}<option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+    <button class="crm-button" type="submit">Filtrlash</button>
+</form>
+<section class="crm-panel table-scroll">
+    <table>
+        <thead><tr><th>Buyurtma №</th><th>Buyurtma vaqti</th><th>Mijoz</th><th>Telefon</th><th>Yetkazib berish</th>{% if request.crm_role != 'courier' %}<th>To‘lov</th><th>Jami</th>{% endif %}{% if can_assign %}<th>Florist / Kuryer</th>{% endif %}<th>Holat</th></tr></thead>
+        <tbody>
+        {% for order in orders %}
+        <tr>
+            <td>#{{ order.id }}</td><td><time datetime="{{ order.created_at|date:'c' }}">{{ order.created_at|date:"d.m.Y H:i" }}</time></td>
+            <td>{{ order.customer_name }}</td><td>{{ order.phone }}</td>
+            <td>{% if order.delivery_required %}Lokatsiya Telegramda yuboriladi{% else %}Do‘kondan olib ketish{% endif %}</td>
+            {% if request.crm_role != 'courier' %}<td>{{ order.get_payment_method_display }}<small>{{ order.get_payment_status_display }}</small></td><td>{{ order.total }} UZS</td>{% endif %}
+            {% if can_assign %}
+            <td><form class="assignment-form" method="post" action="{% url 'crm_order_assignments' order.id %}">{% csrf_token %}
+                <select name="florist_id" aria-label="Florist">
+                    <option value="">Florist tanlanmagan</option>
+                    {% for florist in florists %}<option value="{{ florist.id }}" {% if order.assigned_florist_id == florist.id %}selected{% endif %}>{{ florist.get_full_name|default:florist.username }}</option>{% endfor %}
+                </select>
+                <select name="courier_id" aria-label="Kuryer">
+                    <option value="">Kuryer tanlanmagan</option>
+                    {% for courier in couriers %}<option value="{{ courier.id }}" {% if order.assigned_courier_id == courier.id %}selected{% endif %}>{{ courier.get_full_name|default:courier.username }}</option>{% endfor %}
+                </select>
+                <button class="small-button" type="submit">Biriktirish</button>
+            </form></td>
+            {% endif %}
+            <td><span class="status status-{{ order.status }}">{{ order.get_status_display }}</span>
+                {% if can_assign or request.crm_role == 'florist' and order.assigned_florist_id == request.user.id and order.status == 'pending' or request.crm_role == 'courier' and order.assigned_courier_id == request.user.id and order.status == 'processing' or request.crm_role == 'courier' and order.assigned_courier_id == request.user.id and order.status == 'shipped' %}
+                <form class="inline-form status-form" method="post" action="{% url 'crm_order_status' order.id %}">{% csrf_token %}<select name="status">{% for value,label in statuses %}{% if request.crm_role != 'courier' or order.status == 'processing' and value == 'shipped' or order.status == 'shipped' and value == 'delivered' or can_assign %}<option value="{{ value }}" {% if order.status == value %}selected{% endif %}>{{ label }}</option>{% endif %}{% endfor %}</select><button class="small-button" type="submit">Saqlash</button></form>
+                {% endif %}
+            </td>
+        </tr>
+        {% empty %}<tr><td colspan="{% if can_assign %}9{% elif request.crm_role == 'courier' %}6{% else %}8{% endif %}" class="empty">Buyurtma topilmadi.</td></tr>{% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endblock %}
