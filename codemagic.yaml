@@ -33,6 +33,8 @@ workflows:
       flutter: stable
       xcode: latest
       cocoapods: default
+      vars:
+        API_BASE_URL: https://mimozafloral.uz
     scripts:
       - name: Get Flutter packages
         script: |

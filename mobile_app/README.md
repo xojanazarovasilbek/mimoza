@@ -122,11 +122,10 @@ not an App Store or TestFlight build. A debug iOS build cannot be launched from
 the home screen on iOS 14 or newer. Do not share Apple credentials or signing
 keys in chat.
 
-To connect the iOS app to the storefront, define `API_BASE_URL` in the
-Codemagic workflow's `environment.vars` (or use a configured variable group)
-before running it. It must be the deployed server's HTTPS origin. Without it
-the release app can open, but server-dependent features will report that the
-API address is not configured.
+The Sideloadly workflow sets `API_BASE_URL` in `environment.vars` to
+`https://mimozafloral.uz`. The server must have the mobile API deployed for
+server-dependent features to work. If the server address changes, update the
+workflow and build and install a new IPA. The address must be an HTTPS origin.
 
 Run with the deployed HTTPS server origin, for example:
 
