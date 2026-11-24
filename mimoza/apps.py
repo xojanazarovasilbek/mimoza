@@ -6,3 +6,4 @@ class MimozaConfig(AppConfig):
 
     def ready(self):
         from . import audit
+        from . import mobile_notifications

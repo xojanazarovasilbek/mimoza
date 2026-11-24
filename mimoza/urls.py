@@ -13,6 +13,7 @@ urlpatterns = [
     path('api/v1/auth/login/', views.api_mobile_login, name='api_mobile_login'),
     path('api/v1/auth/register/', views.api_mobile_register, name='api_mobile_register'),
     path('api/v1/auth/logout/', views.api_mobile_logout, name='api_mobile_logout'),
+    path('api/v1/push/device/', views.api_mobile_push_device, name='api_mobile_push_device'),
     path('api/v1/account/', views.api_mobile_account, name='api_mobile_account'),
     path('api/v1/admin/dashboard/', views.api_mobile_dashboard, name='api_mobile_dashboard'),
     path('api/v1/admin/orders/', mobile_admin.orders, name='api_admin_orders'),

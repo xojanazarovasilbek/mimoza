@@ -36,6 +36,7 @@ from .models import (
     Customer,
     ImportantDate,
     MobileAccessToken,
+    MobilePushDevice,
     Order,
     OrderItem,
     PaymentTransaction,
@@ -759,6 +760,32 @@ def api_mobile_logout(request):
     if error_response:
         return error_response
     request.mobile_access_token.delete()
+    return JsonResponse({'success': True})
+
+
+@csrf_exempt
+@require_POST
+@mobile_api_auth_required
+def api_mobile_push_device(request):
+    payload, error = _mobile_json_body(request)
+    if error:
+        return error
+    registration_token = payload.get('token')
+    if (
+        not isinstance(registration_token, str)
+        or not registration_token
+        or len(registration_token) > 512
+        or registration_token != registration_token.strip()
+    ):
+        return JsonResponse({'error': 'Qurilma tokeni noto‘g‘ri.'}, status=400)
+    with transaction.atomic():
+        MobilePushDevice.objects.filter(registration_token=registration_token).exclude(
+            access_token=request.mobile_access_token,
+        ).delete()
+        MobilePushDevice.objects.update_or_create(
+            access_token=request.mobile_access_token,
+            defaults={'registration_token': registration_token},
+        )
     return JsonResponse({'success': True})
 
 

@@ -9,3 +9,4 @@ production-data.json
 .env.*
 !.env.example
 *.log
+mobile_app/android/app/google-services.json

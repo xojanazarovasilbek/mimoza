@@ -150,6 +150,7 @@ class ImportantDate(models.Model):
     date = models.DateField('Sana')
     reminder_enabled = models.BooleanField('Eslatma yoqilgan', default=True)
     last_reminded_for = models.DateField('Oxirgi yuborilgan eslatma sanasi', null=True, blank=True)
+    last_mobile_reminded_for = models.DateField(null=True, blank=True)
     created_at = models.DateTimeField(default=timezone.now)
 
     class Meta:
@@ -259,10 +260,11 @@ class Order(models.Model):
         ordering = ['-created_at']
 
     def save(self, *args, **kwargs):
-        if self.order_code or not self._state.adding:
-            return super().save(*args, **kwargs)
-
         using = kwargs.get('using') or router.db_for_write(type(self), instance=self)
+        if self.order_code or not self._state.adding:
+            with transaction.atomic(using=using):
+                return super().save(*args, **kwargs)
+
         for _ in range(10):
             self.order_code = generate_order_code()
             try:
@@ -359,6 +361,27 @@ class MobileAccessToken(models.Model):
 
     def __str__(self):
         return f'{self.user.username} · {self.expires_at:%Y-%m-%d}'
+
+
+class MobilePushDevice(models.Model):
+    access_token = models.OneToOneField(
+        MobileAccessToken, on_delete=models.CASCADE, related_name='push_device',
+    )
+    registration_token = models.CharField(max_length=512, unique=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
+class MobilePushMessage(models.Model):
+    class Kind(models.TextChoices):
+        CUSTOMER = 'customer', 'Mijoz'
+        ADMIN = 'admin', 'Admin'
+
+    device = models.ForeignKey(MobilePushDevice, on_delete=models.CASCADE, related_name='messages')
+    kind = models.CharField(max_length=10, choices=Kind.choices)
+    title = models.CharField(max_length=100)
+    body = models.CharField(max_length=255)
+    created_at = models.DateTimeField(default=timezone.now)
+    sent_at = models.DateTimeField(null=True, blank=True)
 
 
 class AuditLog(models.Model):

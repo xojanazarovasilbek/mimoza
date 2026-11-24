@@ -1,0 +1,14 @@
+[Unit]
+Description=Send Mimoza mobile push notifications
+After=network.target
+
+[Service]
+Type=oneshot
+User=www-data
+Group=www-data
+WorkingDirectory=/opt/mimoza
+EnvironmentFile=/etc/mimoza/mimoza.env
+ExecStart=/opt/mimoza/.venv/bin/python manage.py queue_mobile_date_reminders
+ExecStart=/opt/mimoza/.venv/bin/python manage.py send_mobile_push
+PrivateTmp=true
+NoNewPrivileges=true

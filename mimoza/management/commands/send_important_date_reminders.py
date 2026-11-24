@@ -10,18 +10,23 @@ from mimoza.models import ImportantDate
 from mimoza.push_notifications import send_push_notification
 
 
+def reminder_date_filter(reminder_date):
+    date_filter = Q(date__month=reminder_date.month, date__day=reminder_date.day)
+    if (
+        reminder_date.month == 2
+        and reminder_date.day == 28
+        and not calendar.isleap(reminder_date.year)
+    ):
+        date_filter |= Q(date__month=2, date__day=29)
+    return date_filter
+
+
 class Command(BaseCommand):
     help = 'Send annual important-date push reminders two days in advance.'
 
     def handle(self, *args, **options):
         reminder_date = timezone.localdate() + timedelta(days=2)
-        date_filter = Q(date__month=reminder_date.month, date__day=reminder_date.day)
-        if (
-            reminder_date.month == 2
-            and reminder_date.day == 28
-            and not calendar.isleap(reminder_date.year)
-        ):
-            date_filter |= Q(date__month=2, date__day=29)
+        date_filter = reminder_date_filter(reminder_date)
 
         candidates = ImportantDate.objects.filter(
             date_filter,

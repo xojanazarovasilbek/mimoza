@@ -255,6 +255,10 @@ void main() {
   testWidgets(
     'admin login opens the dashboard and logout returns to storefront',
     (tester) async {
+      tester.view.physicalSize = const Size(360, 800);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
       var dashboardRequests = 0;
       final api = StoreApi(
         baseUrl: Uri.parse('https://api.example.test'),
@@ -327,14 +331,35 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Admin dashboard'), findsOneWidget);
       expect(find.text('Bugungi buyurtmalar'), findsOneWidget);
+      await tester.drag(find.byType(ListView), const Offset(0, -350));
+      await tester.pumpAndSettle();
       expect(find.text('#10006 · Ali'), findsOneWidget);
-      expect(find.byKey(const ValueKey('nav-catalog')), findsNothing);
+      for (final name in [
+        'home',
+        'catalog',
+        'reels',
+        'cart',
+        'profile',
+        'admin',
+      ]) {
+        expect(find.byKey(ValueKey('nav-$name')), findsOneWidget);
+      }
       await tester.tap(find.byTooltip('Yangilash'));
       await tester.pumpAndSettle();
       expect(dashboardRequests, 2);
+      await tester.tap(find.byKey(const ValueKey('nav-home')));
+      await tester.pumpAndSettle();
+      expect(find.text('Admin dashboard'), findsNothing);
+      await tester.tap(find.byKey(const ValueKey('nav-catalog')));
+      await tester.pumpAndSettle();
+      expect(find.text('Admin dashboard'), findsNothing);
+      await tester.tap(find.byKey(const ValueKey('nav-admin')));
+      await tester.pumpAndSettle();
+      expect(find.text('Admin dashboard'), findsOneWidget);
       await tester.tap(find.byTooltip('Akkauntdan chiqish'));
       await tester.pumpAndSettle();
       expect(find.byKey(const ValueKey('nav-catalog')), findsOneWidget);
+      expect(find.byKey(const ValueKey('nav-admin')), findsNothing);
       expect(tokenStore.token, isNull);
     },
   );

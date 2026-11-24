@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import 'screens/admin_dashboard_screen.dart';
@@ -6,6 +8,7 @@ import 'screens/catalog_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/reels_screen.dart';
+import 'services/mobile_push.dart';
 import 'services/store_api.dart';
 import 'services/token_store.dart';
 import 'state/account_controller.dart';
@@ -26,22 +29,43 @@ class MimozaApp extends StatefulWidget {
   State<MimozaApp> createState() => _MimozaAppState();
 }
 
-class _MimozaAppState extends State<MimozaApp> {
+class _MimozaAppState extends State<MimozaApp> with WidgetsBindingObserver {
   late final StoreApi _api = widget.api ?? StoreApi();
   late final AccountController _account = AccountController(
     _api,
     widget.tokenStore ?? const SecureTokenStore(),
   );
   final _cart = CartModel();
+  final _messengerKey = GlobalKey<ScaffoldMessengerState>();
+  late final _push = MobilePush(_api, _account, (message) {
+    if (message.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _messengerKey.currentState?.showSnackBar(
+            SnackBar(content: Text(message)),
+          );
+        }
+      });
+    }
+  });
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _account.restore();
+    unawaited(_push.start());
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) unawaited(_push.sync());
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _push.dispose();
     _api.close();
     _account.dispose();
     _cart.dispose();
@@ -51,6 +75,7 @@ class _MimozaAppState extends State<MimozaApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      scaffoldMessengerKey: _messengerKey,
       title: 'Mimoza Floral',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
@@ -138,17 +163,46 @@ class _AppShell extends StatefulWidget {
 
 class _AppShellState extends State<_AppShell> {
   int _selectedIndex = 0;
+  late bool _isAdmin;
+
+  @override
+  void initState() {
+    super.initState();
+    _isAdmin = widget.account.account?.isAdmin == true;
+    if (_isAdmin) _selectedIndex = 5;
+    widget.account.addListener(_onAccountChanged);
+  }
+
+  @override
+  void didUpdateWidget(covariant _AppShell oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.account != widget.account) {
+      oldWidget.account.removeListener(_onAccountChanged);
+      widget.account.addListener(_onAccountChanged);
+      _onAccountChanged();
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.account.removeListener(_onAccountChanged);
+    super.dispose();
+  }
+
+  void _onAccountChanged() {
+    final isAdmin = widget.account.account?.isAdmin == true;
+    if (isAdmin == _isAdmin) return;
+    setState(() {
+      _isAdmin = isAdmin;
+      _selectedIndex = isAdmin ? 5 : 0;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: widget.account,
-      builder: (context, _) {
-        if (widget.account.account?.isAdmin == true) {
-          return AdminDashboardScreen(api: widget.api, account: widget.account);
-        }
-        return _buildCustomerShell();
-      },
+      builder: (context, _) => _buildCustomerShell(),
     );
   }
 
@@ -174,6 +228,8 @@ class _AppShellState extends State<_AppShell> {
               onOpenProfile: () => _selectTab(4),
             ),
             ProfileScreen(accountController: widget.account, api: widget.api),
+            if (_isAdmin)
+              AdminDashboardScreen(api: widget.api, account: widget.account),
           ],
         ),
       ),
@@ -224,6 +280,13 @@ class _AppShellState extends State<_AppShell> {
                 selectedIcon: Icon(Icons.person),
                 label: 'Profil',
               ),
+              if (_isAdmin)
+                const NavigationDestination(
+                  key: ValueKey('nav-admin'),
+                  icon: Icon(Icons.admin_panel_settings_outlined),
+                  selectedIcon: Icon(Icons.admin_panel_settings),
+                  label: 'Admin',
+                ),
             ],
           );
         },

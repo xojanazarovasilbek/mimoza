@@ -107,12 +107,16 @@ class AccountController extends ChangeNotifier {
       if (token != null) await _api.logout(token);
     } on StoreApiException catch (exception) {
       error = exception.message;
-    } finally {
-      await _tokenStore.delete();
-      _accessToken = null;
-      account = null;
-      isLoading = false;
-      notifyListeners();
+      if (exception.statusCode != 401) {
+        isLoading = false;
+        notifyListeners();
+        return;
+      }
     }
+    await _tokenStore.delete();
+    _accessToken = null;
+    account = null;
+    isLoading = false;
+    notifyListeners();
   }
 }

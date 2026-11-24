@@ -10,7 +10,7 @@ from django.db.models import Model
 from django.db.models.signals import m2m_changed, post_save, pre_delete, pre_save
 from django.dispatch import receiver
 
-from .models import AuditLog, MobileAccessToken
+from .models import AuditLog, MobileAccessToken, MobilePushDevice, MobilePushMessage
 
 
 _current_actor = ContextVar('mimoza_audit_actor', default=None)
@@ -38,7 +38,7 @@ def reset_audit_actor(token):
 
 def _tracked_model(model):
     return (
-        model not in (AuditLog, MobileAccessToken)
+        model not in (AuditLog, MobileAccessToken, MobilePushDevice, MobilePushMessage)
         and (
             model._meta.app_label == 'mimoza'
             or model in (get_user_model(), Group)

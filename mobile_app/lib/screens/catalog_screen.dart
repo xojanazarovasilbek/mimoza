@@ -62,26 +62,32 @@ class _CatalogScreenState extends State<CatalogScreen> {
                 child: const Icon(Icons.local_florist, color: mimozaGold),
               ),
               const SizedBox(width: 12),
-              const Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'MIMOZA FLORAL',
-                    style: TextStyle(
-                      color: mimozaGold,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 2.2,
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'MIMOZA FLORAL',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: mimozaGold,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 2.2,
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 3),
-                  Text(
-                    'Gullar bilan quvonch ulashing',
-                    style: TextStyle(color: mimozaCream, fontSize: 12),
-                  ),
-                ],
+                    SizedBox(height: 3),
+                    Text(
+                      'Gullar bilan quvonch ulashing',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(color: mimozaCream, fontSize: 12),
+                    ),
+                  ],
+                ),
               ),
-              const Spacer(),
+              const SizedBox(width: 8),
               const Icon(
                 Icons.location_on_outlined,
                 color: mimozaGold,

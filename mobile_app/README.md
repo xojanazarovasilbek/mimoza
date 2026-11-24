@@ -57,10 +57,47 @@ the 30% advance as paid after an authenticated provider callback. The remaining
 verification procedure is confirmed. Never place payment credentials in the
 mobile app or Django admin's legacy API-key fields. Live verification requires
 merchant accounts and provider sandbox credentials. Existing orders can still
-be reopened, and their delivery requests link to Telegram. Mobile push
-notifications are not yet available.
+be reopened, and their delivery requests link to Telegram.
+
+## Mobile push notifications
+
+The app can register a signed-in device for Firebase Cloud Messaging (FCM).
+Customers receive order/payment status updates and important-date reminders;
+super admins and active managers receive notifications for accepted orders
+(online orders only after payment confirmation). Notifications contain no
+customer contact details. Registration is removed when logout succeeds.
+Foreground notifications appear in the app on Android and as system banners
+on iOS. Notification taps open the app.
+
+Push is disabled unless `FIREBASE_ENABLED=true` is supplied at build time.
+Create a Firebase project and register the Android app
+`uz.mimoza.floral.mimoza_mobile` and iOS app
+`uz.mimoza.floral.mimozaMobile`. Put Android's `google-services.json` in
+`mobile_app/android/app/`; the file is ignored by Git. For each platform build,
+use that Firebase app's values (not a service-account key) as Dart defines:
+
+```bash
+flutter build apk --dart-define=API_BASE_URL=https://your-domain.example \
+  --dart-define=FIREBASE_ENABLED=true \
+  --dart-define=FIREBASE_API_KEY=YOUR_API_KEY \
+  --dart-define=FIREBASE_APP_ID=YOUR_ANDROID_APP_ID \
+  --dart-define=FIREBASE_SENDER_ID=YOUR_SENDER_ID \
+  --dart-define=FIREBASE_PROJECT_ID=YOUR_PROJECT_ID
+```
+
+For iOS, use `flutter build ipa` with the iOS app's API key and app ID and
+add `--dart-define=FIREBASE_IOS_BUNDLE_ID=uz.mimoza.floral.mimozaMobile`.
+The Codemagic unsigned workflow does not provide these settings and does not
+enable push. Set up Apple Push Notifications capability, an appropriate signing
+profile and an APNs authentication key uploaded to Firebase before testing on
+an iPhone. The iOS build must also use the deployed HTTPS `API_BASE_URL`.
+Firebase service-account credentials must remain on the server, not in the app.
+See the mobile push section of `MEDIA_AND_NOTIFICATIONS.md` for server setup.
+Real delivery must be tested on devices after Firebase and APNs are configured.
 
 Super admins and active managers see a native CRM dashboard after sign-in.
+The storefront navigation remains available, and an Admin tab returns to the
+dashboard.
 They can search orders, update their status and assigned workers, manage
 products and stock (including image and video uploads), and view analytics.
 Super admins can also view staff, change their roles, and inspect audit history.
@@ -70,8 +107,8 @@ if the product changed since it was opened; return to the list and reopen it.
 
 ## iOS preparation
 
-The iOS project is included, but it has not yet been built or tested on iOS.
-Building and running on an iPhone or iOS simulator requires macOS and Xcode.
+The iOS project has built unsigned in Codemagic, but has not been tested on an
+iPhone. Building for iOS requires macOS and Xcode, locally or through Codemagic.
 On a Mac, install Flutter and Xcode, run `flutter pub get`, then open
 `ios/Runner.xcworkspace` in Xcode and select a signing team and a unique bundle
 identifier for a physical device. The generated bundle ID is provisional.

@@ -124,6 +124,29 @@ with the deployment platform's scheduler or Windows Task Scheduler. It sends
 annual-date reminders two days in advance, and records the occurrence only after
 at least one browser receives the push.
 
+## Mobile Push (Firebase)
+
+Create a Firebase project and configure the Android and iOS apps as described
+in `mobile_app/README.md`. Enable Firebase Cloud Messaging and upload an Apple
+Push Notifications authentication key to Firebase for iOS. Provision the
+app's push entitlement in the Apple Developer portal and signing profile.
+Firebase setup files and service-account keys must not be sent in chat.
+
+On the server, install the updated requirements, run `python manage.py migrate`,
+and set `GOOGLE_APPLICATION_CREDENTIALS` to the absolute path of a protected
+Firebase service-account JSON file for the same project. Keep the file outside
+the repository and readable only by the service account. Alternatively use
+Google Application Default Credentials when available.
+
+Install `deploy/mimoza-mobile-push.service` and
+`deploy/mimoza-mobile-push.timer`, adjust the application path and user, and
+enable the timer with `systemctl enable --now mimoza-mobile-push.timer` after
+`systemctl daemon-reload`. It queues important-date reminders and sends pending
+messages every minute. A delivery error leaves the message queued for retry and
+is reported in the service logs. Firebase acceptance is not a guarantee of
+device delivery. Customers and admins must sign in and allow notifications.
+Web and mobile reminder delivery are tracked independently.
+
 ## Cloudflare R2
 
 Create an R2 bucket, an access key limited to that bucket, and a public custom

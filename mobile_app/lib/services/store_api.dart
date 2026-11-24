@@ -148,6 +148,15 @@ class StoreApi {
     }
   }
 
+  Future<void> registerPushDevice(
+    String accessToken,
+    String deviceToken,
+  ) async {
+    await _postJson(_baseUrl.resolve('api/v1/push/device/'), {
+      'token': deviceToken,
+    }, accessToken: accessToken);
+  }
+
   Future<AdminDashboard> fetchAdminDashboard(String token) async {
     final json = await _getJson(
       _baseUrl.resolve('api/v1/admin/dashboard/'),

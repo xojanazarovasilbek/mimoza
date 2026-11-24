@@ -1,0 +1,10 @@
+[Unit]
+Description=Queue and send Mimoza mobile push notifications
+
+[Timer]
+OnBootSec=1min
+OnUnitActiveSec=1min
+Unit=mimoza-mobile-push.service
+
+[Install]
+WantedBy=timers.target
