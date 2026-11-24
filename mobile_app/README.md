@@ -115,6 +115,19 @@ identifier for a physical device. The generated bundle ID is provisional.
 An Apple account can be used for development signing; App Store distribution
 requires Apple Developer Program membership.
 
+For Sideloadly testing, run the `ios-sideload-release` Codemagic workflow.
+Download `Mimoza-unsigned.ipa` from its artifacts and use Sideloadly to sign and
+install it on the iPhone. The IPA is unsigned until Sideloadly signs it; it is
+not an App Store or TestFlight build. A debug iOS build cannot be launched from
+the home screen on iOS 14 or newer. Do not share Apple credentials or signing
+keys in chat.
+
+To connect the iOS app to the storefront, define `API_BASE_URL` in the
+Codemagic workflow's `environment.vars` (or use a configured variable group)
+before running it. It must be the deployed server's HTTPS origin. Without it
+the release app can open, but server-dependent features will report that the
+API address is not configured.
+
 Run with the deployed HTTPS server origin, for example:
 
 ```bash
