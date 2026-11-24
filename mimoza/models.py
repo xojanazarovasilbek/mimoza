@@ -1,6 +1,8 @@
 from datetime import timedelta
+import secrets
+import uuid
 
-from django.db import models
+from django.db import IntegrityError, models, router, transaction
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 from django.contrib.auth.models import User
@@ -9,6 +11,10 @@ from .media_utils import WebPImageModel
 
 def default_story_expiry():
     return timezone.now() + timedelta(days=1)
+
+
+def generate_order_code():
+    return str(secrets.randbelow(90000) + 10000)
 
 
 class Category(models.Model):
@@ -203,7 +209,18 @@ class Order(models.Model):
     customer_name = models.CharField(max_length=150)
     phone = models.CharField(max_length=30)
     address = models.TextField()
-    delivery_required = models.BooleanField('Yetkazib berish kerak', default=True)
+    order_code = models.CharField(
+        '5 xonali buyurtma kodi',
+        max_length=5,
+        unique=True,
+        editable=False,
+        blank=True,
+    )
+    mobile_request_key = models.UUIDField(null=True, blank=True, unique=True, editable=False)
+    mobile_request_hash = models.CharField(max_length=64, blank=True, editable=False)
+    web_payment_key = models.UUIDField(null=True, blank=True, unique=True, editable=False)
+    qr_token = models.UUIDField('QR kodi', default=uuid.uuid4, unique=True, editable=False)
+    delivery_required = models.BooleanField('Yetkazib berish kerak', null=True, blank=True, default=None)
     latitude = models.DecimalField('Kenglik', max_digits=9, decimal_places=6, null=True, blank=True)
     longitude = models.DecimalField('Uzunlik', max_digits=9, decimal_places=6, null=True, blank=True)
     delivery_note = models.CharField(max_length=255, blank=True)
@@ -241,6 +258,24 @@ class Order(models.Model):
         verbose_name_plural = 'Buyurtmalar'
         ordering = ['-created_at']
 
+    def save(self, *args, **kwargs):
+        if self.order_code or not self._state.adding:
+            return super().save(*args, **kwargs)
+
+        using = kwargs.get('using') or router.db_for_write(type(self), instance=self)
+        for _ in range(10):
+            self.order_code = generate_order_code()
+            try:
+                with transaction.atomic(using=using):
+                    return super().save(*args, **kwargs)
+            except IntegrityError:
+                code_exists = type(self)._base_manager.using(using).filter(
+                    order_code=self.order_code,
+                ).exists()
+                if not code_exists:
+                    raise
+        raise ValidationError('5 xonali buyurtma kodi ajratilmadi. Qayta urinib ko‘ring.')
+
     def __str__(self):
         return f"#{self.pk} - {self.customer_name}"
 
@@ -255,10 +290,46 @@ class OrderItem(models.Model):
         return f"{self.product.name} x {self.quantity}"
 
 
+class PaymentTransaction(models.Model):
+    class Provider(models.TextChoices):
+        CLICK = 'click', 'Click'
+        PAYME = 'payme', 'Payme'
+
+    class Status(models.TextChoices):
+        PENDING = 'pending', 'Kutilmoqda'
+        PAID = 'paid', 'To‘langan'
+        FAILED = 'failed', 'Muvaffaqiyatsiz'
+        EXPIRED = 'expired', 'Muddati tugagan'
+        CANCELLED = 'cancelled', 'Bekor qilingan'
+
+    order = models.ForeignKey(Order, on_delete=models.PROTECT, related_name='payment_transactions')
+    provider = models.CharField(max_length=10, choices=Provider.choices)
+    status = models.CharField(max_length=10, choices=Status.choices, default=Status.PENDING)
+    amount_tiyin = models.PositiveBigIntegerField()
+    checkout_url = models.URLField(max_length=2048, blank=True)
+    provider_transaction_id = models.CharField(max_length=100, null=True, blank=True, unique=True)
+    provider_prepare_id = models.CharField(max_length=100, blank=True)
+    provider_created_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(default=timezone.now)
+    expires_at = models.DateTimeField(db_index=True)
+    paid_at = models.DateTimeField(null=True, blank=True)
+    cancelled_at = models.DateTimeField(null=True, blank=True)
+    cancel_reason = models.IntegerField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = 'To‘lov tranzaksiyasi'
+        verbose_name_plural = 'To‘lov tranzaksiyalari'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.get_provider_display()} · #{self.order_id} · {self.get_status_display()}'
+
+
 class StaffProfile(models.Model):
     class Role(models.TextChoices):
         SUPER_ADMIN = 'super_admin', 'Super Admin'
         MANAGER = 'manager', 'Menejer'
+        SHOPKEEPER = 'shopkeeper', 'Do‘konchi'
         FLORIST = 'florist', 'Florist'
         COURIER = 'courier', 'Kuryer'
 
@@ -273,6 +344,52 @@ class StaffProfile(models.Model):
 
     def __str__(self):
         return f"{self.user.get_full_name() or self.user.username} - {self.get_role_display()}"
+
+
+class MobileAccessToken(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='mobile_access_tokens')
+    token_hash = models.CharField(max_length=64, unique=True)
+    auth_hash = models.CharField(max_length=128)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField(db_index=True)
+
+    class Meta:
+        verbose_name = 'Mobil kirish tokeni'
+        verbose_name_plural = 'Mobil kirish tokenlari'
+
+    def __str__(self):
+        return f'{self.user.username} · {self.expires_at:%Y-%m-%d}'
+
+
+class AuditLog(models.Model):
+    class Action(models.TextChoices):
+        CREATE = 'create', 'Qo‘shildi'
+        UPDATE = 'update', 'O‘zgartirildi'
+        DELETE = 'delete', 'O‘chirildi'
+
+    actor = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='mimoza_audit_entries',
+        verbose_name='Bajargan foydalanuvchi',
+    )
+    actor_username = models.CharField('Foydalanuvchi nomi', max_length=150, default='Tizim')
+    action = models.CharField('Amal', max_length=10, choices=Action.choices)
+    model_label = models.CharField('Ma’lumot turi', max_length=100)
+    object_id = models.CharField('Yozuv ID', max_length=100)
+    object_repr = models.CharField('Yozuv', max_length=255)
+    changes = models.JSONField('O‘zgarishlar', default=dict)
+    created_at = models.DateTimeField('Vaqti', auto_now_add=True, db_index=True)
+
+    class Meta:
+        verbose_name = 'Faoliyat yozuvi'
+        verbose_name_plural = 'Faoliyat tarixi'
+        ordering = ['-created_at', '-id']
+
+    def __str__(self):
+        return f'{self.actor_username} · {self.get_action_display()} · {self.object_repr}'
 
 
 class DeliveryTariff(models.Model):

@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="{% static 'css/site.css' %}">
     {% block extra_head %}{% endblock %}
 </head>
-<body>
+<body class="{% block body_class %}{% endblock %}">
     <header class="header">
         <a class="brand" href="{% url 'home' %}" aria-label="Mimoza Floral bosh sahifa">
             <img class="brand-logo" src="{% static 'images/mimoza-logo-wide.png' %}" alt="Mimoza Floral">

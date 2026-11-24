@@ -91,6 +91,8 @@
                 <span class="order-status">{{ order.get_status_display }}</span>
                 <strong>{{ order.total }} UZS</strong>
             </div>
+            <p>5 xonali buyurtma kodi: <strong>{{ order.order_code }}</strong></p>
+            <a href="{% url 'order_qr' order.id %}" target="_blank" rel="noopener">Buyurtma QR kodini ko‘rish</a>
             <ul>{% for item in order.items.all %}<li>{{ item.product.name }} × {{ item.quantity }}</li>{% endfor %}</ul>
         </article>
         {% empty %}

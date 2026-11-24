@@ -61,6 +61,51 @@ server does not provide a local mail relay. After HTTPS is confirmed, set
 `DJANGO_HSTS_PRELOAD` only if every subdomain is HTTPS-only and you intend to
 request browser preload inclusion.
 
+## Online payments, order QR codes, and staff access
+
+Website and mobile checkout support Click Shop API and Payme hosted checkout
+when their server environment credentials are configured. The customer pays
+30% online; the remaining 70% is due at delivery or collection. Orders reserve
+inventory during the payment window; run
+`python manage.py expire_pending_payments` on a recurring schedule (for example,
+every five minutes) so expired payments release that reservation.
+
+Set `CLICK_MERCHANT_ID`, `CLICK_SERVICE_ID`, and `CLICK_SECRET_KEY` in the
+protected server environment. Configure Click's Prepare and Complete callbacks
+to `https://<your-domain>/payment/click/callback/`.
+Set `PAYME_MERCHANT_ID`, `PAYME_MERCHANT_LOGIN`, and `PAYME_MERCHANT_KEY` in the
+same protected environment; `PAYME_ACCOUNT_FIELD` must match the order-ID field
+configured on the Payme cash register (defaults to `order_id`). Configure the
+Payme cash register callback as
+`https://<your-domain>/payment/payme/callback/`.
+Payme checkout links are requested server-to-server from its signed
+`/api/checkout/url` endpoint; the app never receives merchant secrets.
+
+The old API-key fields in Django admin are not used; never put provider secrets
+in them or in the mobile app. Uzum checkout is deliberately not offered until
+Uzum confirms an authenticated callback-verification procedure. Setting an
+Uzum key alone does not enable it. Mocked local tests do not replace provider
+sandbox verification; real checkout needs approved merchant accounts and
+credentials.
+
+Paid orders remain available in the customer account and can be marked for
+delivery or store collection. QR codes and staff access continue to work as
+before.
+
+After an order is accepted, the customer receives a QR code containing an
+opaque order reference, not their contact details. The customer chooses pickup
+or delivery on the confirmation page; for delivery, the Telegram link prepares
+the order reference, product IDs, name, and phone so the customer can send them
+along with their live location. The customer's account keeps a private QR-code
+link for each order.
+
+Super Admins can assign the **Do‘konchi** role in CRM user management. This role
+can search orders by QR reference, order number, customer name, or phone and
+flower ID/name, and advance an order through its valid statuses. It cannot
+access the dashboard, inventory, analytics, staff management, or order
+financial totals. Apply Django migrations on deployment before enabling this
+workflow.
+
 ## Web Push
 
 Generate a VAPID key pair locally:

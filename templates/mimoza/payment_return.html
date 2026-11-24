@@ -1,0 +1,32 @@
+{% extends 'mimoza/base.html' %}
+{% block title %}To‘lov holati — Mimoza Floral{% endblock %}
+{% block content %}
+<section class="section">
+    <div class="section-heading">
+        <p class="eyebrow">To‘lov</p>
+        {% if order and order.payment_status == 'paid' %}
+            <h1>Avans to‘lovi tasdiqlandi</h1>
+            <p>Buyurtma #{{ order.order_code }} qabul qilindi. Qolgan 70% yetkazishda yoki olib ketishda to‘lanadi.</p>
+            <form method="post" action="{% url 'order_delivery_choice' order.id %}">
+                {% csrf_token %}
+                <button class="button" name="delivery_required" value="yes">Yetkazib berish</button>
+                <button class="button" name="delivery_required" value="no">Do‘kondan olib ketish</button>
+            </form>
+        {% elif order and order.payment_status == 'failed' %}
+            <h1>To‘lov yakunlanmadi</h1>
+            <p>Mahsulotlar mavjud bo‘lsa, to‘lovni qayta boshlashingiz mumkin.</p>
+            {% for message in messages %}<p role="status">{{ message }}</p>{% endfor %}
+            <form method="post" action="{% url 'retry_order_payment' order.id %}">
+                {% csrf_token %}
+                <button class="button" type="submit">To‘lovni qayta urinish</button>
+            </form>
+        {% elif order %}
+            <h1>To‘lov holati tekshirilmoqda</h1>
+            <p>Buyurtma #{{ order.order_code }} uchun avans hali tasdiqlanmagan. Bir oz kutib, akkauntdan holatini tekshiring.</p>
+        {% else %}
+            <h1>To‘lov holati tekshirilmoqda</h1>
+            <p>To‘lov yakunlangach buyurtma holati yangilanadi. Buyurtma holatini akkauntingizdan tekshiring.</p>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

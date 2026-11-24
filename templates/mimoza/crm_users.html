@@ -3,14 +3,14 @@
 {% block crm_content %}
 <header class="crm-page-heading"><div><p class="crm-kicker">XODIMLAR VA KIRISH HUQUQI</p><h1>Foydalanuvchilar</h1></div>{% if request.user.is_superuser %}<a class="crm-button" href="{% url 'admin:auth_user_add' %}">+ Xodim qo‘shish</a>{% endif %}</header>
 <section class="crm-panel table-scroll">
-    <table>
+    <table class="crm-card-table">
         <thead><tr><th>Foydalanuvchi</th><th>Ism-familiya</th><th>Telefon</th><th>Rol</th><th>Holati</th></tr></thead>
         <tbody>
         {% for staff_user in staff_users %}
         <tr>
-            <td>{{ staff_user.username }}</td><td>{{ staff_user.get_full_name|default:"—" }}</td><td>{{ staff_user.staff_phone|default:"—" }}</td>
-            <td>{% if staff_user.is_superuser %}Super Admin{% else %}<form class="inline-form" method="post" action="{% url 'crm_user_role' staff_user.id %}">{% csrf_token %}<select name="role">{% for value,label in roles %}<option value="{{ value }}" {% if staff_user.role_value == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select><button class="small-button" type="submit">Saqlash</button></form>{% endif %}</td>
-            <td>{% if staff_user.is_active and staff_user.worker_active %}Faol{% else %}Faol emas{% endif %}</td>
+            <td data-label="Foydalanuvchi">{{ staff_user.username }}</td><td data-label="Ism-familiya">{{ staff_user.get_full_name|default:"—" }}</td><td data-label="Telefon">{{ staff_user.staff_phone|default:"—" }}</td>
+            <td data-label="Rol">{% if staff_user.is_superuser %}Super Admin{% else %}<form class="inline-form" method="post" action="{% url 'crm_user_role' staff_user.id %}">{% csrf_token %}<select name="role" aria-label="{{ staff_user.username }} roli">{% for value,label in roles %}<option value="{{ value }}" {% if staff_user.role_value == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select><button class="small-button" type="submit">Saqlash</button></form>{% endif %}</td>
+            <td data-label="Holati">{% if staff_user.is_active and staff_user.worker_active %}Faol{% else %}Faol emas{% endif %}</td>
         </tr>
         {% empty %}<tr><td colspan="5" class="empty">Xodimlar ro‘yxati bo‘sh.</td></tr>{% endfor %}
         </tbody>

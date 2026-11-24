@@ -1,23 +1,29 @@
 {% extends 'mimoza/base.html' %}
 {% load static %}
+{% block body_class %}crm-page{% endblock %}
 {% block extra_head %}<link rel="stylesheet" href="{% static 'css/crm.css' %}">{% endblock %}
 {% block content %}
 <div class="crm-wrap">
     <aside class="crm-sidebar">
         <p class="crm-kicker">MIMOZA FLORAL</p>
         <h2>Boshqaruv</h2>
-        <nav>
+        <nav aria-label="CRM bo‘limlari">
+            {% if request.user.crm_role != 'shopkeeper' %}
             <a href="{% url 'crm_dashboard' %}">Dashboard</a>
+            {% endif %}
             <a class="crm-orders-link" href="{% url 'crm_orders' %}">Buyurtmalar <span id="crm-order-count" class="crm-order-count" data-count-url="{% url 'crm_order_notification_count' %}" aria-live="polite" {% if not request.crm_notification_count %}hidden{% endif %}>{% if request.crm_notification_count > 99 %}99+{% else %}{{ request.crm_notification_count }}{% endif %}</span></a>
-            {% if request.user.crm_role != 'courier' %}
+            {% if request.user.crm_role != 'courier' and request.user.crm_role != 'shopkeeper' %}
             <a href="{% url 'crm_products' %}">Mahsulotlar va ombor</a>
             {% endif %}
             {% if request.user.crm_role == 'super_admin' or request.user.crm_role == 'manager' %}
             <a href="{% url 'crm_analytics' %}">Analitika</a>
             {% endif %}
-            {% if request.user.crm_role == 'super_admin' %}<a href="{% url 'crm_users' %}">Foydalanuvchilar</a>{% endif %}
+            {% if request.user.crm_role == 'super_admin' %}
+            <a href="{% url 'crm_users' %}">Foydalanuvchilar</a>
+            <a href="{% url 'crm_audit_history' %}">Harakatlar tarixi</a>
+            {% endif %}
             {% if request.user.is_superuser %}<a href="{% url 'admin:index' %}">Admin sozlamalari</a>{% endif %}
-            <a href="{% url 'home' %}">Saytga qaytish</a>
+            {% if request.user.crm_role != 'shopkeeper' %}<a href="{% url 'home' %}">Saytga qaytish</a>{% endif %}
         </nav>
         <div class="crm-current-user">{{ request.user.get_full_name|default:request.user.username }}</div>
     </aside>

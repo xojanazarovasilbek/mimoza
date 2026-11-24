@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from django.utils.html import format_html
 
 from .models import (
+    AuditLog,
     Category,
     Customer,
     DeliveryTariff,
@@ -11,6 +12,7 @@ from .models import (
     MimozaSettings,
     Order,
     OrderItem,
+    PaymentTransaction,
     Product,
     ProductComment,
     ProductLike,
@@ -109,14 +111,51 @@ class OrderItemInline(admin.TabularInline):
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
     list_display = (
-        'id', 'customer_name', 'phone', 'delivery_required', 'status', 'payment_method',
+        'id', 'order_code', 'customer_name', 'phone', 'delivery_required', 'status', 'payment_method',
         'payment_status', 'assigned_florist', 'assigned_courier', 'total', 'created_at',
     )
     list_filter = ('status', 'payment_method', 'payment_status', 'created_at')
     search_fields = ('customer_name', 'phone', 'address')
-    list_editable = ('status',)
     inlines = (OrderItemInline,)
     readonly_fields = ('total', 'created_at')
+
+    def get_readonly_fields(self, request, obj=None):
+        fields = list(super().get_readonly_fields(request, obj))
+        if (
+            obj
+            and obj.payment_method in (Order.Payment.CLICK, Order.Payment.PAYME, Order.Payment.UZUM)
+            and obj.payment_status != Order.PaymentStatus.PAID
+        ):
+            fields.extend(('status', 'payment_status', 'payment_method'))
+        return tuple(fields)
+
+
+@admin.register(PaymentTransaction)
+class PaymentTransactionAdmin(admin.ModelAdmin):
+    list_display = ('id', 'order', 'provider', 'status', 'amount_tiyin', 'provider_transaction_id', 'created_at', 'expires_at')
+    list_filter = ('provider', 'status', 'created_at')
+    search_fields = ('order__order_code', 'provider_transaction_id', 'provider_prepare_id')
+    exclude = ('checkout_url',)
+    readonly_fields = (
+        'order',
+        'provider',
+        'status',
+        'amount_tiyin',
+        'provider_transaction_id',
+        'provider_prepare_id',
+        'created_at',
+        'expires_at',
+        'paid_at',
+    )
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 class StaffProfileInline(admin.StackedInline):
@@ -155,6 +194,11 @@ class MimozaSettingsAdmin(admin.ModelAdmin):
         ('To‘lov xizmatlari', {
             'fields': ('click_api_key', 'payme_api_key', 'uzum_api_key'),
             'classes': ('collapse',),
+            'description': (
+                'Bu eski maydonlar to‘lovlarda ishlatilmaydi. Kalitlarni administrator '
+                'paneliga emas, serverdagi himoyalangan muhit sozlamalariga kiriting; '
+                'Click va Payme to‘liq sozlanganda yoqiladi. Uzum vaqtincha o‘chiq.'
+            ),
         }),
         ('SMS integratsiyasi', {
             'fields': ('sms_login', 'sms_password'),
@@ -164,6 +208,39 @@ class MimozaSettingsAdmin(admin.ModelAdmin):
 
     def has_add_permission(self, request):
         return not MimozaSettings.objects.exists()
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+@admin.register(AuditLog)
+class AuditLogAdmin(admin.ModelAdmin):
+    list_display = ('created_at', 'actor_username', 'action', 'model_label', 'object_id', 'object_repr')
+    list_filter = ('action', 'model_label', 'created_at')
+    search_fields = ('actor_username', 'model_label', 'object_id', 'object_repr')
+    readonly_fields = (
+        'actor',
+        'actor_username',
+        'action',
+        'model_label',
+        'object_id',
+        'object_repr',
+        'changes',
+        'created_at',
+    )
+    date_hierarchy = 'created_at'
+
+    def has_module_permission(self, request):
+        return request.user.is_superuser
+
+    def has_view_permission(self, request, obj=None):
+        return request.user.is_superuser
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
 
     def has_delete_permission(self, request, obj=None):
         return False

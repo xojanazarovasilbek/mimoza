@@ -1,10 +1,32 @@
 from django.urls import path
 
-from . import views
+from . import mobile_admin, views
 
 urlpatterns = [
     path('', views.home, name='home'),
     path('catalog/', views.catalog, name='catalog'),
+    path('api/v1/products/', views.api_products, name='api_products'),
+    path('api/v1/payment-methods/', views.api_payment_methods, name='api_payment_methods'),
+    path('api/v1/products/<slug:slug>/', views.api_product_detail, name='api_product_detail'),
+    path('api/v1/reels/', views.api_reels, name='api_reels'),
+    path('api/v1/products/<int:product_id>/like/', views.api_mobile_product_like, name='api_mobile_product_like'),
+    path('api/v1/auth/login/', views.api_mobile_login, name='api_mobile_login'),
+    path('api/v1/auth/register/', views.api_mobile_register, name='api_mobile_register'),
+    path('api/v1/auth/logout/', views.api_mobile_logout, name='api_mobile_logout'),
+    path('api/v1/account/', views.api_mobile_account, name='api_mobile_account'),
+    path('api/v1/admin/dashboard/', views.api_mobile_dashboard, name='api_mobile_dashboard'),
+    path('api/v1/admin/orders/', mobile_admin.orders, name='api_admin_orders'),
+    path('api/v1/admin/orders/<int:order_id>/', mobile_admin.order_update, name='api_admin_order_update'),
+    path('api/v1/admin/products/', mobile_admin.products, name='api_admin_products'),
+    path('api/v1/admin/products/<int:product_id>/', mobile_admin.product_detail, name='api_admin_product_detail'),
+    path('api/v1/admin/users/', mobile_admin.users, name='api_admin_users'),
+    path('api/v1/admin/users/<int:user_id>/role/', mobile_admin.user_role, name='api_admin_user_role'),
+    path('api/v1/admin/analytics/', mobile_admin.analytics, name='api_admin_analytics'),
+    path('api/v1/admin/audit/', mobile_admin.audit_history, name='api_admin_audit'),
+    path('api/v1/orders/', views.api_mobile_order_create, name='api_mobile_order_create'),
+    path('api/v1/orders/<int:order_id>/', views.api_mobile_order_detail, name='api_mobile_order_detail'),
+    path('api/v1/orders/<int:order_id>/payments/retry/', views.api_mobile_order_payment_retry, name='api_mobile_order_payment_retry'),
+    path('api/v1/orders/<int:order_id>/delivery/', views.api_mobile_order_delivery, name='api_mobile_order_delivery'),
     path('contact/', views.contact, name='contact'),
     path('stories/<int:story_id>/', views.story_detail, name='story_detail'),
     path('reels/', views.reels, name='reels'),
@@ -15,6 +37,12 @@ urlpatterns = [
     path('cart/add/<int:product_id>/', views.cart_add, name='cart_add'),
     path('cart/update/<int:product_id>/', views.cart_update, name='cart_update'),
     path('checkout/', views.checkout, name='checkout'),
+    path('payment/return/<int:order_id>/', views.payment_return, name='payment_return'),
+    path('orders/<int:order_id>/payment/retry/', views.retry_order_payment, name='retry_order_payment'),
+    path('payment/click/callback/', views.click_callback, name='click_payment_callback'),
+    path('payment/payme/callback/', views.payme_callback, name='payme_payment_callback'),
+    path('orders/<int:order_id>/delivery/', views.order_delivery_choice, name='order_delivery_choice'),
+    path('orders/<int:order_id>/qr.png', views.order_qr, name='order_qr'),
     path('account/', views.account, name='account'),
     path('account/login/', views.account_login, name='account_login'),
     path('account/register/', views.account_register, name='account_register'),
@@ -42,5 +70,6 @@ urlpatterns = [
     path('crm/products/<int:product_id>/stock/', views.crm_product_stock, name='crm_product_stock'),
     path('crm/analytics/', views.crm_analytics, name='crm_analytics'),
     path('crm/users/', views.crm_users, name='crm_users'),
+    path('crm/audit-history/', views.crm_audit_history, name='crm_audit_history'),
     path('crm/users/<int:user_id>/role/', views.crm_user_role, name='crm_user_role'),
 ]

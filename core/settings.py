@@ -89,6 +89,7 @@ MIDDLEWARE.extend([
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'mimoza.middleware.AuditActorMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ])
@@ -273,8 +274,10 @@ CLICK_MERCHANT_ID = os.environ.get('CLICK_MERCHANT_ID', '')
 CLICK_SERVICE_ID = os.environ.get('CLICK_SERVICE_ID', '')
 CLICK_SECRET_KEY = os.environ.get('CLICK_SECRET_KEY', '')
 PAYME_MERCHANT_ID = os.environ.get('PAYME_MERCHANT_ID', '')
+PAYME_MERCHANT_LOGIN = os.environ.get('PAYME_MERCHANT_LOGIN', '')
 PAYME_MERCHANT_KEY = os.environ.get('PAYME_MERCHANT_KEY', '')
-UZUM_MERCHANT_ID = os.environ.get('UZUM_MERCHANT_ID', '')
+PAYME_ACCOUNT_FIELD = os.environ.get('PAYME_ACCOUNT_FIELD', 'order_id')
+UZUM_TERMINAL_ID = os.environ.get('UZUM_TERMINAL_ID', '')
 UZUM_API_KEY = os.environ.get('UZUM_API_KEY', '')
 
 

@@ -5,12 +5,27 @@
     <p class="eyebrow">Rahmat</p>
     <h1>Buyurtmangiz qabul qilindi</h1>
     <p>Buyurtma raqami: <strong>#{{ order.id }}</strong></p>
+    <p>5 xonali buyurtma kodi: <strong>{{ order.order_code }}</strong></p>
     <p>Buyurtma berilgan vaqt: <time datetime="{{ order.created_at|date:'c' }}">{{ order.created_at|date:"d.m.Y H:i" }}</time></p>
-    {% if order.delivery_required %}
+    <p>Buyurtma holati: <strong>{{ order.get_status_display }}</strong></p>
+    <div class="order-qr">
+        <p>Buyurtma QR kodi — uni saqlab qo‘ying yoki do‘konchiga ko‘rsating.</p>
+        <img src="{{ order_qr_data_url }}" alt="Buyurtma #{{ order.id }} QR kodi" width="220" height="220">
+        <p><small>QR ID: MIMOZA-ORDER:{{ order.qr_token.hex|upper }}</small></p>
+    </div>
+    {% if order.delivery_required == None %}
     <div class="delivery-help">
-        <p>Yetkazib berish uchun Telegram’da buyurtma raqami, gul raqami va lokatsiyangizni yuboring:</p>
-        <ul>{% for item in order.items.all %}<li>Gul №{{ item.product.pk }} — {{ item.product.name }}</li>{% endfor %}</ul>
-        <a class="button" href="{{ telegram_contact_url }}" target="_blank" rel="noopener">Telegram: @{{ telegram_contact_username }}</a>
+        <p>Buyurtma qabul qilindi. Yetkazib berish kerakmi?</p>
+        <form method="post" action="{% url 'order_delivery_choice' order.id %}">
+            {% csrf_token %}
+            <button class="button" type="submit" name="delivery_required" value="yes">Ha, yetkazib berilsin</button>
+            <button class="button" type="submit" name="delivery_required" value="no">Yo‘q, do‘kondan olib ketaman</button>
+        </form>
+    </div>
+    {% elif order.delivery_required %}
+    <div class="delivery-help">
+        <p>Telegram’da buyurtma QR kodi (yoki raqami) va lokatsiyangizni yuboring.</p>
+        <a class="button" href="{{ telegram_order_url }}" target="_blank" rel="noopener">Telegram’da yuborish: @{{ telegram_contact_username }}</a>
     </div>
     {% else %}
     <p>Buyurtmangizni do‘kondan olib ketishingiz mumkin.</p>

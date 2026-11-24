@@ -1,0 +1,43 @@
+{% extends 'mimoza/crm_base.html' %}
+{% block title %}Harakatlar tarixi — Mimoza CRM{% endblock %}
+{% block crm_content %}
+<header class="crm-page-heading">
+    <div><p class="crm-kicker">ADMIN AMALLARI</p><h1>Harakatlar tarixi</h1></div>
+</header>
+{% for entry in page_obj %}
+<section class="crm-panel" style="margin-bottom:14px">
+    <div class="panel-heading">
+        <h2>{{ entry.get_action_display }}: {{ entry.object_repr }}</h2>
+        <span class="crm-date">{{ entry.created_at|date:"d.m.Y H:i" }}</span>
+    </div>
+    <p class="crm-date">
+        {{ entry.actor_username }} · {{ entry.model_label }} · ID: {{ entry.object_id }}
+    </p>
+    <div class="table-scroll">
+        <table class="crm-card-table">
+            <thead><tr><th>Maydon</th><th>Oldingi qiymat</th><th>Yangi qiymat</th></tr></thead>
+            <tbody>
+            {% for field, values in entry.changes.items %}
+            <tr>
+                <td data-label="Maydon">{{ field }}</td>
+                <td data-label="Oldingi qiymat">{{ values.old|default_if_none:"—" }}</td>
+                <td data-label="Yangi qiymat">{{ values.new|default_if_none:"—" }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="3" class="empty">Maydonlar mavjud emas.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% empty %}
+<section class="crm-panel empty">Hozircha harakatlar tarixi bo‘sh.</section>
+{% endfor %}
+{% if page_obj.has_other_pages %}
+<nav class="period-tabs" aria-label="Sahifalar">
+    {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}">Oldingi</a>{% endif %}
+    <span class="crm-date">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}">Keyingi</a>{% endif %}
+</nav>
+{% endif %}
+{% endblock %}
