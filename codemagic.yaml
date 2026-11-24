@@ -1,0 +1,26 @@
+workflows:
+  ios-unsigned:
+    name: Mimoza iOS unsigned build
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    environment:
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Get Flutter packages
+        script: |
+          cd mobile_app
+          flutter pub get
+      - name: Analyze and test Flutter app
+        script: |
+          cd mobile_app
+          flutter analyze
+          flutter test
+      - name: Build iOS without code signing
+        script: |
+          cd mobile_app
+          flutter build ios --debug --no-codesign
+    artifacts:
+      - mobile_app/build/ios/iphoneos/**/*.app
+      - /tmp/xcodebuild_logs/*.log
